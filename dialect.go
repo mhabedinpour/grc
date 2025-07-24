@@ -9,18 +9,20 @@ import (
 	"time"
 )
 
-func NewStore(tableName, tableEngine, clusterName string) database.Store {
+func NewStore(tableName, tableEngine, clusterName string, insertQuorum any) database.Store {
 	return &Store{
-		tableName:   tableName,
-		tableEngine: tableEngine,
-		clusterName: clusterName,
+		tableName:    tableName,
+		tableEngine:  tableEngine,
+		clusterName:  clusterName,
+		insertQuorum: insertQuorum,
 	}
 }
 
 type Store struct {
-	tableName   string
-	tableEngine string
-	clusterName string
+	tableName    string
+	tableEngine  string
+	clusterName  string
+	insertQuorum any
 }
 
 func (s *Store) Tablename() string {
@@ -54,7 +56,8 @@ func (s *Store) CreateVersionTable(ctx context.Context, db database.DBTxConn) er
 func (s *Store) Insert(ctx context.Context, db database.DBTxConn, req database.InsertRequest) error {
 	_, err := db.ExecContext(
 		ctx,
-		fmt.Sprintf(`INSERT INTO %s (version_id) SETTINGS insert_quorum='auto', insert_quorum_parallel=0, select_sequential_consistency=1 VALUES (?)`, s.Tablename()),
+		fmt.Sprintf(`INSERT INTO %s (version_id) SETTINGS insert_quorum=?, insert_quorum_parallel=0, select_sequential_consistency=1 VALUES (?)`, s.Tablename()),
+		s.insertQuorum,
 		req.Version,
 	)
 

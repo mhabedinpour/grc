@@ -21,8 +21,6 @@ go get github.com/mhabedinpour/grc
 
 ## Usage
 
-### Basic Example
-
 ```go
 // Connect to ClickHouse
 db, err := sql.Open("clickhouse", "clickhouse://user:password@localhost:9000/database")
